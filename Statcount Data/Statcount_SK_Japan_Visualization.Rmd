@@ -1,0 +1,127 @@
+---
+title: "Statcounter Visualization: South Korea and Japan"
+author: "Lillian Horin (for Jarek Azim)"
+output:
+  html_document:
+    df_print: paged
+---
+# Introduction
+
+This code will visualize Statcounter's dataset on media usage in South Korea and Japan in the last year.
+
+# Data Import
+
+First, loading in the libraries for organization and data visualization.
+
+```{r Import-libraries, echo=T, message=FALSE, warning=FALSE}
+# Load libraries
+library(tidyverse)
+library(RColorBrewer)
+```
+
+Next, I'll be importing both datasets from statcounter.
+
+```{r Import-data}
+# Import South Korea data
+sm_sk <- read_csv("data/SM_SK.csv")
+
+# Import Japan data
+sm_jpn <- read_csv("data/SM_JPN.csv")
+
+```
+
+# Data Preparation
+
+Because this is time data, in order to be able to properly plot it, you have to explicitly tell R you are working with a date variable. In R, you can't have a date variable without the day. 
+
+So I will arbitrarily say this is the first day of the month. It won't come up on the graph though.
+
+```{r Set-data-classes}
+# Set data classes for South Korea
+sm_sk$Date <- paste("01", sm_sk$Date, sep="-")
+sm_sk$Date <- as.Date(sm_sk$Date, format='%d-%Y-%m')
+class(sm_sk$Date)
+
+# Set data classes for Japan
+sm_jpn$Date <- paste("01", sm_jpn$Date, sep="-")
+sm_jpn$Date <- as.Date(sm_jpn$Date, format='%d-%Y-%m')
+class(sm_jpn$Date)
+```
+
+# Tidying the Data
+
+Now, for ease of plotting, we are going to make our data tidy. First, I define which social media platforms to show on the graph. On the website, they don't show all the platforms in the dataset. They just show the (presumably) top 7 + "other". It looks like they ignore all the rest of the columns. Just keep in mind there is some data we won't be plotting.
+
+```{r Define-platform-list}
+# List the platforms that will be on the graph
+sm_list = c("Twitter", "Pinterest", "Facebook", "Instagram", "Tumblr", "YouTube", "Reddit", "Other")
+```
+
+Now, we are going to tidy the data up. First, we are going to select the columns that correspond to the date and the aforementioned social media platforms that we will be plotting. Then, we will use a function (`pivot_longer`) to consolidate the data and make it tidy.
+
+```{r Tidy-data, echo=T, message=FALSE, warning=FALSE}
+# Tidy South Korea data
+sm_sk <- sm_sk %>%
+  select(Date, Twitter, Pinterest, Facebook, YouTube, Instagram, Tumblr, Reddit, Other) %>%
+  pivot_longer(sm_list,
+               names_to = "SocialMedia",
+               values_to = "PercentUsed")
+
+# Tidy Japan data
+sm_jpn <- sm_jpn %>%
+  select(Date, Twitter, Pinterest, Facebook, YouTube, Instagram, Tumblr, Reddit, Other) %>%
+  pivot_longer(sm_list,
+               names_to = "SocialMedia",
+               values_to = "PercentUsed") 
+```
+
+# Visualize Data
+
+Finally, we will plot the above data. I use the `plotly::ggplotly` wrapper to make the graph look really pretty. The group is explicitly defined as the social media platforms. The points and lines will have the same color. I decided to set the Y-axis values from 0-100 so that you can see the extent to which each platform is used.
+
+
+```{r Plot-SK-Data}
+## South Korea Graph
+plotly::ggplotly(
+  sm_sk %>%  
+    ggplot(aes(Date, PercentUsed, group = SocialMedia, color=SocialMedia)) + 
+    geom_point() +
+    geom_line() +
+    theme(axis.text.x = element_text(angle = 45),
+          axis.title.x = element_blank(),
+          text=element_text(family="TT Times New Roman")) +
+    scale_x_date(date_labels="%b %Y",date_breaks  ="1 month") +
+    scale_color_brewer(palette = "Dark2") +
+    ylab("Used by % of Users") +
+    labs(color = "Platform") +
+    ylim(0, 100)
+)
+```
+
+
+```{r Plot-Japan-Data}
+## Japan Graph
+plotly::ggplotly(
+  sm_jpn %>%  
+    ggplot(aes(Date, PercentUsed, group = SocialMedia, color=SocialMedia)) + 
+    geom_point() +
+    geom_line() +
+    theme(axis.text.x = element_text(angle = 45),
+          axis.title.x = element_blank(),
+          text=element_text(family="TT Times New Roman")) +
+    scale_x_date(date_labels="%b %Y",date_breaks  ="1 month") +
+    scale_color_brewer(palette = "Dark2") +
+    ylab("Used by % of Users") +
+    labs(color = "Platform") +
+    ylim(0,100)
+)
+```
+
+---
+
+# Session Info
+```{r Session-info}
+sessionInfo()
+```
+
+
