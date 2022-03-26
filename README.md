@@ -6,3 +6,5 @@ The GitHub repository for Jarek Azim's thesis analyzing how fandoms affect polit
 - Survey Data: conducted by Jarek Azim in March 2022. 
 - Statcount Social Media Stats Worldwide - February 2021-2022: [Japan](https://gs.statcounter.com/social-media-stats/all/japan), [Korea](https://gs.statcounter.com/social-media-stats/all/south-korea)
 - Twitter API Data provided by [University of Pennsylvania Libraries Research Data and Digital Scholarship](https://www.library.upenn.edu/blogs/rdds)
+
+Please Note: Because RMarkdown doesn't handle Japanese characters very well, the RMarkdown Notebook at some point starts having different outputs (for example, isn't properly subsetting out specific keywords that are successfully being subsetted in the console). For that reason, we saved both outputs, but are relying on the console data as that is the responsive one.
