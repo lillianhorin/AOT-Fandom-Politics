@@ -178,6 +178,83 @@ groups_engaging_data <- tibble(Type = c("Individual Fans",
                         )
 groups_engaging_data
 ```
+```{r Political-SNS-Data}
+# Create dataset
+political_sns_data <- tibble(Type = c("Social Movement Organizations",
+                                        "Social Movement Organizations",
+                                        "Social Movement Organizations",
+                                        "Social Movement Organizations",
+                                        "Religious Movements",
+                                        "Religious Movements",
+                                        "Religious Movements",
+                                        "Religious Movements",
+                                        "Campaigning",
+                                        "Campaigning",
+                                        "Campaigning",
+                                        "Campaigning",
+                                        "Independent News Accounts",
+                                        "Independent News Accounts",
+                                        "Independent News Accounts",
+                                        "Independent News Accounts",
+                                        "Cultural Discourse",
+                                        "Cultural Discourse",
+                                        "Cultural Discourse",
+                                        "Cultural Discourse",
+                                        "Political Distrust, Emotions, or Support",
+                                        "Political Distrust, Emotions, or Support",
+                                        "Political Distrust, Emotions, or Support",
+                                        "Political Distrust, Emotions, or Support"),
+                               Answer = c("Never",
+                                          "Sometimes",
+                                          "Often",
+                                          "Always",
+                                          "Never",
+                                          "Sometimes",
+                                          "Often",
+                                          "Always",
+                                          "Never",
+                                          "Sometimes",
+                                          "Often",
+                                          "Always",
+                                          "Never",
+                                          "Sometimes",
+                                          "Often",
+                                          "Always",
+                                          "Never",
+                                          "Sometimes",
+                                          "Often",
+                                          "Always",
+                                          "Never",
+                                          "Sometimes",
+                                          "Often",
+                                          "Always"),
+                               Proportion = c(0.0149,
+                                              0.2687,
+                                              0.4627,
+                                              0.2537,
+                                              0.4773,
+                                              0.3864,
+                                              0.1136,
+                                              0.0227,
+                                              0.0781,
+                                              0.4063,
+                                              0.2969,
+                                              0.2188,
+                                              0.0667,
+                                              0.5667,
+                                              0.2667,
+                                              0.10,
+                                              0.00,
+                                              0.2388,
+                                              0.3582,
+                                              0.4030,
+                                              0.0149,
+                                              0.2537,
+                                              0.2985,
+                                              0.4328)
+)
+political_sns_data
+```
 
 
 # Data Preparation
@@ -201,6 +278,13 @@ groups_engaging_data$Answer <- groups_engaging_data$Answer %>%
 groups_engaging_data$Type <- groups_engaging_data$Type %>%
   factor(levels = c("Individual Fans", "Fan Groups", "Media Representatives"))
 
+political_sns_data$Answer <- political_sns_data$Answer %>%
+  factor(levels = c("Always", "Often", "Sometimes","Never"))
+
+political_sns_data$Type <- political_sns_data$Type %>%
+  factor(levels = c("Social Movement Organizations", "Religious Movements", "Campaigning","Independent News Accounts","Cultural Discourse","Political Distrust, Emotions, or Support"))
+
+
 # Check that all classes are factors
 
 class(social_impact_data$Answer)
@@ -208,6 +292,8 @@ class(backlash_data$Answer)
 class(backlash_data$Type)
 class(groups_engaging_data$Answer)
 class(groups_engaging_data$Type)
+class(political_sns_data$Answer)
+class(political_sns_data$Type)
 
 ```
 
@@ -217,7 +303,7 @@ class(groups_engaging_data$Type)
 
 Now time to visualize the data. For some reason, font changes aren't working here. 
 
-```{r Social-Impact-Graph, warnings=FALSE}
+```{r Social-Impact-Graph-Setup, warnings=FALSE}
 # Social Media Impact Graph
 social_impact_graph <- social_impact_data %>%
   ggplot(aes(x = Answer, y = Proportion, fill=Answer)) + 
@@ -230,7 +316,7 @@ social_impact_graph <- social_impact_data %>%
         plot.title = element_text(size=14))
 ```
 
-```{r SI, fig.width = 10}
+```{r Social-Impact-Graph, fig.width = 10}
 social_impact_graph
 ```
 
@@ -267,6 +353,20 @@ groups_engaging_graph <-groups_engaging_data %>%
 
 groups_engaging_graph
 
+```
+```{r Political-SNS-Graph, fig.width = 15}
+political_sns_graph <- political_sns_data %>%
+  ggplot(aes(x= Answer, Group=Type)) + 
+  geom_bar(show.legend = FALSE, aes(y = Proportion, fill = factor(Type)), stat="identity") + 
+  geom_text(aes( label = scales::percent(Proportion),y= Proportion ), stat= "identity", vjust = -.5, size = 3) +
+  ggtitle('From your experience on social media, have you seen the following and to what extent?') +
+  labs(y = "% Respondents", fill="Type") +
+  facet_grid(~Type) +
+  scale_y_continuous(labels = scales::percent,limits=c(0,1)) +
+  theme(axis.title.x = element_blank(),
+        axis.text.x = element_text(angle = 45, hjust = 1),
+        plot.title = element_text(size=14))
+political_sns_graph
 ```
 
 
