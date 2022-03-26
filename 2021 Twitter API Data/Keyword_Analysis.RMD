@@ -15,16 +15,20 @@ knitr::opts_chunk$set(echo = TRUE)
 
 Jarek received an excel file that scraped tweets from 2021. This file is originally 10 GB, so we will isolate the tweets that focus on Attack on Titan. Then we will use natural language processing to see if there are any other interesting keywords that pop up. Finally, we will count how often relevant keywords are used in these tweets to get a sense of what was most popularly being spoken about.
 
+
+Note that due to difficulties with RMarkdown and non-English characters, this notebook may not render characters and graphs properly. But the graphs correctly rendered in the console will be uploaded to this project's GitHub.
+
 ---
+
 # Importing libraries
 
 The libraries that will be used are as follows.
 
-```{r Import-library}
+```{r Import-library, warning=FALSE, message=FALSE}
 # Import library
 library(tidyverse)
 library(udpipe)
-library(wordcloud)
+library(wordcloud2)
 ```
 
 ---
@@ -34,7 +38,7 @@ library(wordcloud)
 ## Data import
 This dataset is huge - about 10 GB. So we will start by importing it and immediately trying to make it as easy to manage as possible.
 
-```{r Import-data}
+```{r Import-data, warning=FALSE}
 # Import data
 data10 <- read_csv('data/tweets.csv')
 head(data10)
@@ -51,14 +55,14 @@ small10 <- data10 %>%
 head(small10)
 
 # Save full "relevant columns" as CSV
-write_csv(small10, "data/twitter10_text_time.csv")
+write_excel_csv(small10, "data/twitter10_text_time.csv")
 ```
 
 And the code to reimport is here, if necessary.
 
 ```{r Reimport-data}
 # Read smaller CSV
-small10 <- read_csv("data/twitter10_text_time.csv")
+# small10 <- read_csv("data/twitter10_text_time.csv")
 ```
 
 ## Subset data with references to AOT
@@ -88,13 +92,14 @@ Save these tweets for later reimport.
 
 ```{r Save-tweets}
 # Save keyword tweets to CSV
-write_csv(small10_key, "data/twitter10_text_time_keywords.csv")
+write_excel_csv(small10_key, "data/twitter10_text_time_keywords.csv")
 ```
 
 Now, we will clean up the workspace to proceed to the Keyword Analysis.
 
 ```{r Clean-workspace}
-rm(list=ls()) 
+rm(data10) 
+rm(small10)
 ```
 
 ---
@@ -102,12 +107,12 @@ rm(list=ls())
 # Natural Language Processing
 ## Prepare data
 
-We are reimporting the data as its own data file.
+We are reimporting the data as its own data file, if necessary.
 
 
 ```{r}
 # Import data
-data <- read_csv("data/twitter10_text_time_keywords.csv")
+# data <- read_csv("data/twitter10_text_time_keywords.csv")
 ```
 
 Next, we are going to set up the Japanese language model that will parse out the grammar used in the tweets. 
@@ -117,7 +122,7 @@ Next, we are going to set up the Japanese language model that will parse out the
 jl <- udpipe_download_model(language = "japanese")
 str(jl)
 udmodel_japanese <- udpipe_load_model(file = jl$file_model)
-annotated_data <- data.frame(udpipe_annotate(udmodel_japanese, data$text))
+annotated_data <- data.frame(udpipe_annotate(udmodel_japanese, small10_key$text))
 ```
 
 This file took about 10 minutes to create, so we will be saving the output as a separate file so we can reload it in if anything happens.
@@ -126,8 +131,8 @@ This file took about 10 minutes to create, so we will be saving the output as a 
 # Save NLP file
 saveRDS(annotated_data, file = "data/annotated_jpn_keyword_analysis.rds")
 
-# Reload NLP file
-annotated_data <- readRDS(file = "data/annotated_jpn_keyword_analysis.rds")
+# Reload NLP file if necessary
+# annotated_data <- readRDS(file = "data/annotated_jpn_keyword_analysis.rds")
 ```
 
 ## Cleaning data
@@ -151,7 +156,7 @@ cleaned_data <- noun_data %>%
            token != "お" & # remove a particle that slipped in
            token != "/" & # remove slashes
            token != "×" & # remove special characters
-           token != "https" # remove url reference
+           !grepl( 'http', token, fixed = TRUE) # remove url reference
   )
 ```
 
@@ -162,17 +167,18 @@ Our next step was to remove references to the baseball team (the Yomiuri Giants)
 cleaned_data <- cleaned_data %>%
   subset(token != "阪神" & 
            token != "コラボ" &
-           token != "giants" 
+           token != "giants" &
+           token != "baseball"
          ) 
 ```
 
 Now, we take a peek at what words pop up in the first word cloud.
 
-```{r Wordcloud-1}
+```{r Wordcloud-1, warning=FALSE}
 # Generate word cloud
 frequency <- txt_freq(cleaned_data$token)
-wc <- wordcloud(words = frequency$key, freq = frequency$freq, max.words=200)
-wc 
+wc1 <- wordcloud2(frequency[1:100,]) # Subset the top 100 words
+wc1
 ```
 
 
@@ -199,20 +205,24 @@ cleaned_data <- cleaned_data %>%
 
 Now, we will generate the word cloud again and save that file.
 
+*Note*: For some reason, the word cloud that is printing in the notebook is different than the one that is being shown in the terminal in RStudio. So we will save both images.
+
 ```{r WordCloud-2}
 # Generate word cloud
 frequency <- txt_freq(cleaned_data$token)
-wc <- wordcloud(words = frequency$key, freq = frequency$freq, max.words=100)
-wc
+wc2 <- wordcloud2(frequency[1:150,])
+wc2
 ```
                
 Now, we will take a look at the full list.
 
 ```{r Full-keyword}
-frequency
+head(frequency)
+
+write_excel_csv(frequency,'data/NLP_keyword_frequency.csv')
 ```
 
-An interesting word that pops out is 歴史 (history). 
+An interesting word that pops out is 歴史 (history) at #84. We will add that to the specific keyword analysis.
 
 ---
 
@@ -222,8 +232,9 @@ An interesting word that pops out is 歴史 (history).
 Jarek pre-selected keywords and identified a new one based on the NLP analysis. We are going to filter tweets using those words from the original AOT-subsetted dataset.
 
 ```{r Subset-specific-keywords}
+
 # Isolate specific tweets based on keyword
-specific_kw <- data %>%
+specific_kw <- small10_key %>%
   filter(str_detect(text, "ファン") | # Fan/Fandom
            str_detect(text, "軍隊") | # Army
            str_detect(text, "調査兵団") | # Survey Corps
@@ -246,7 +257,7 @@ specific_kw <- data %>%
 write_excel_csv(specific_kw, 'data/tweet10_keywords.csv') # Saving with this function preserves the Japanese encoding
 ```
 
-Now we are going to count the frequencies of those keywords in these tweets.
+This leaves us with 1,384 tweets from the original 21,553. Now we are going to count the frequencies of those keywords in these tweets.
 
 ```{r Count-keyword-frequency}
 # Create list of keywords to get counts for
@@ -266,6 +277,21 @@ keyword_count
 
 ```
 
+Now we will plot the frequencies to see what comes up the most.
+
+```{r Plot-frequencies, fig.width=8}
+# Visualize the data
+keyword_count %>%
+  ggplot(aes(fill=Keyword,x=reorder(Keyword, Count), y = Count)) +
+  geom_bar(stat="identity", show.legend=FALSE) +
+  geom_text(aes(label=Count, hjust=-0.3)) +
+  xlab("Keyword") + ylab("sqrt(Count)") + 
+  theme(axis.text.y=element_text(size=14),
+        axis.title=element_text(size=14)) +
+  coord_flip()
+
+```
+
 Since there is a strong right skew to this data, we are going to square-root transform the frequencies just so it can be visualized better.
 
 ```{r Transform-counts}
@@ -278,9 +304,10 @@ keyword_count_transformed$Count <- sqrt(keyword_count_transformed$Count)
 Finally, we are going to visualize the transformed frequency data. The Y-axis will be transformed frequencies, but we will plot the actual counts on top of the bar graph.
 
 
-```{r Plot-frequencies}
+
+```{r Plot-transformed-frequencies, fig.width=8}
 # Visualize the data
-keyword_count_transformed %>%
+kw_graph_transformed <- keyword_count_transformed %>%
   ggplot(aes(fill=Keyword,x=reorder(Keyword, Count), y = Count)) +
   geom_bar(stat="identity", show.legend=FALSE) +
   geom_text(aes(label=keyword_count$Count, hjust=-0.3)) +
@@ -289,6 +316,7 @@ keyword_count_transformed %>%
         axis.title=element_text(size=14)) +
   coord_flip()
 
+kw_graph_transformed
 ```
 
 ---
