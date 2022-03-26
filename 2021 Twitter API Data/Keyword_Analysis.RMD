@@ -15,12 +15,16 @@ knitr::opts_chunk$set(echo = TRUE)
 
 Jarek received an excel file that scraped tweets from 2021. This file is originally 10 GB, so we will isolate the tweets that focus on Attack on Titan. Then we will use natural language processing to see if there are any other interesting keywords that pop up. Finally, we will count how often relevant keywords are used in these tweets to get a sense of what was most popularly being spoken about.
 
+
+Note that due to difficulties with RMarkdown and non-English characters, this notebook may not render characters and graphs properly.
+
 ---
+
 # Importing libraries
 
 The libraries that will be used are as follows.
 
-```{r Import-library}
+```{r Import-library, warning=FALSE, message=FALSE}
 # Import library
 library(tidyverse)
 library(udpipe)
@@ -34,7 +38,7 @@ library(wordcloud)
 ## Data import
 This dataset is huge - about 10 GB. So we will start by importing it and immediately trying to make it as easy to manage as possible.
 
-```{r Import-data}
+```{r Import-data, warning=FALSE}
 # Import data
 data10 <- read_csv('data/tweets.csv')
 head(data10)
@@ -51,7 +55,7 @@ small10 <- data10 %>%
 head(small10)
 
 # Save full "relevant columns" as CSV
-write_csv(small10, "data/twitter10_text_time.csv")
+write_excel_csv(small10, "data/twitter10_text_time.csv")
 ```
 
 And the code to reimport is here, if necessary.
@@ -88,7 +92,7 @@ Save these tweets for later reimport.
 
 ```{r Save-tweets}
 # Save keyword tweets to CSV
-write_csv(small10_key, "data/twitter10_text_time_keywords.csv")
+write_excel_csv(small10_key, "data/twitter10_text_time_keywords.csv")
 ```
 
 Now, we will clean up the workspace to proceed to the Keyword Analysis.
@@ -168,11 +172,10 @@ cleaned_data <- cleaned_data %>%
 
 Now, we take a peek at what words pop up in the first word cloud.
 
-```{r Wordcloud-1}
+```{r Wordcloud-1, warning=FALSE}
 # Generate word cloud
 frequency <- txt_freq(cleaned_data$token)
 wc <- wordcloud(words = frequency$key, freq = frequency$freq, max.words=200)
-wc 
 ```
 
 
@@ -203,13 +206,14 @@ Now, we will generate the word cloud again and save that file.
 # Generate word cloud
 frequency <- txt_freq(cleaned_data$token)
 wc <- wordcloud(words = frequency$key, freq = frequency$freq, max.words=100)
-wc
 ```
                
 Now, we will take a look at the full list.
 
 ```{r Full-keyword}
-frequency
+head(frequency)
+
+write_excel_csv(frequency,'data/NLP_keyword_frequency.csv')
 ```
 
 An interesting word that pops out is 歴史 (history). 
@@ -276,6 +280,7 @@ keyword_count_transformed$Count <- sqrt(keyword_count_transformed$Count)
 ```
 
 Finally, we are going to visualize the transformed frequency data. The Y-axis will be transformed frequencies, but we will plot the actual counts on top of the bar graph.
+
 
 
 ```{r Plot-frequencies}
