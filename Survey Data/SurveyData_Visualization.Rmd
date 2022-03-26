@@ -1,7 +1,10 @@
 ---
 title: "Survey_Data_Visualization"
 author: "Lillian Horin (for Jarek Azim)"
-output: html_document
+output: 
+  html_document:
+    self-contained: false
+    keep_md: true
 ---
 
 ```{r setup, include=FALSE}
@@ -27,8 +30,14 @@ These next codes will be loading in the survey data.
 ```{r Social-Impact}
 # Create dataset
 social_impact_data <- tibble(  
-	Answer = c("Yes", "No", "Probably", "I've Never Noticed"), 
-	Proportion = c(0.4932, 0.0685, 0.3699, 0.0685)
+	Answer = c("Yes", 
+	           "No", 
+	           "Probably", 
+	           "I've Never Noticed"), 
+	Proportion = c(0.4932, 
+	               0.0685, 
+	               0.3699, 
+	               0.0685)
 )
 
 social_impact_data
@@ -52,12 +61,122 @@ backlash_data <- tibble(Type = c("Historical Depictions",
                                  "International Satire",
                                  "International Satire",
                                  "International Satire",
-                                 "International Satire","Discrimination","Discrimination","Discrimination","Discrimination","Discrimination","Other","Other","Other","Other","Other"),
-                        Answer = c("Often", "Somewhat Often", "Neutral", "Somewhat Rare", "Rare","Often", "Somewhat Often", "Neutral", "Somewhat Rare", "Rare","Often", "Somewhat Often", "Neutral", "Somewhat Rare", "Rare","Often", "Somewhat Often", "Neutral", "Somewhat Rare", "Rare","Often", "Somewhat Often", "Neutral", "Somewhat Rare", "Rare"),
-                        Proportion = c(0.2958, 0.4225,0.1268,0.1127,0.0423,0.4143,0.3857,0.1143,0.0571,0.0286,0.1449,0.2609,0.3913,0.1594,0.0435,0.4722,0.4167,0.056,0.056,0.00,0.1944,0.1389,0.6389,0.278,0.00)
+                                 "International Satire",
+                                 "Discrimination",
+                                 "Discrimination",
+                                 "Discrimination",
+                                 "Discrimination",
+                                 "Discrimination",
+                                 "Other",
+                                 "Other",
+                                 "Other",
+                                 "Other",
+                                 "Other"),
+                        Answer = c("Often", 
+                                   "Somewhat Often", 
+                                   "Neutral", 
+                                   "Somewhat Rare", 
+                                   "Rare",
+                                   "Often", 
+                                   "Somewhat Often", 
+                                   "Neutral", 
+                                   "Somewhat Rare", 
+                                   "Rare",
+                                   "Often", 
+                                   "Somewhat Often", 
+                                   "Neutral", 
+                                   "Somewhat Rare", 
+                                   "Rare",
+                                   "Often", 
+                                   "Somewhat Often", 
+                                   "Neutral", 
+                                   "Somewhat Rare", 
+                                   "Rare",
+                                   "Often", 
+                                   "Somewhat Often", 
+                                   "Neutral", 
+                                   "Somewhat Rare", 
+                                   "Rare"),
+                        Proportion = c(0.2958,
+                                       0.4225,
+                                       0.1268,
+                                       0.1127,
+                                       0.0423,
+                                       0.4143,
+                                       0.3857,
+                                       0.1143,
+                                       0.0571,
+                                       0.0286,
+                                       0.1449,
+                                       0.2609,
+                                       0.3913,
+                                       0.1594,
+                                       0.0435,
+                                       0.4722,
+                                       0.4167,
+                                       0.056,
+                                       0.056,
+                                       0.00,
+                                       0.1944,
+                                       0.1389,
+                                       0.6389,
+                                       0.278,
+                                       0.00)
 )
 
+backlash_data
 
+
+```
+```{r Groups-Engaging}
+# Create dataset
+groups_engaging_data <- tibble(Type = c("Individual Fans",
+                                 "Individual Fans",
+                                 "Individual Fans",
+                                 "Individual Fans",
+                                 "Individual Fans",
+                                 "Fan Groups",
+                                 "Fan Groups",
+                                 "Fan Groups",
+                                 "Fan Groups",
+                                 "Fan Groups",
+                                 "Media Representatives",
+                                 "Media Representatives",
+                                 "Media Representatives",
+                                 "Media Representatives",
+                                 "Media Representatives"),
+                        Answer = c("Often", 
+                                   "Somewhat Often", 
+                                   "Neutral", 
+                                   "Somewhat Rare", 
+                                   "Rare",
+                                   "Often", 
+                                   "Somewhat Often", 
+                                   "Neutral", 
+                                   "Somewhat Rare", 
+                                   "Rare",
+                                   "Often", 
+                                   "Somewhat Often", 
+                                   "Neutral", 
+                                   "Somewhat Rare", 
+                                   "Rare"),
+                        Proportion = c(0.2958,
+                                       0.2958,
+                                       0.2114,
+                                       0.1127,
+                                       0.0845,
+                                       0.1014,
+                                       0.3768,
+                                       0.2319,
+                                       0.2464,
+                                       0.0435,
+                                       0.0735,
+                                       0.1765,
+                                       0.2941,
+                                       0.25,
+                                       0.2059)
+                        )
+groups_engaging_data
 ```
 
 
@@ -70,17 +189,25 @@ In order to visualize the graphs in a particular order, the data `levels` will b
 social_impact_data$Answer <- social_impact_data$Answer %>%
   factor(levels = c("Yes", "No", "Probably", "I've Never Noticed"))
 
-class(social_impact_data$Answer)
-
 backlash_data$Answer <- backlash_data$Answer %>%
   factor(levels = c("Often", "Somewhat Often", "Neutral", "Somewhat Rare", "Rare"))
-
-class(backlash_data$Answer)
 
 backlash_data$Type <- backlash_data$Type %>%
   factor(levels = c("Historical Depictions", "Political Insensitivity", "International Satire", "Discrimination", "Other"))
 
+groups_engaging_data$Answer <- groups_engaging_data$Answer %>%
+  factor(levels = c("Often", "Somewhat Often", "Neutral", "Somewhat Rare", "Rare"))
+
+groups_engaging_data$Type <- groups_engaging_data$Type %>%
+  factor(levels = c("Individual Fans", "Fan Groups", "Media Representatives"))
+
+# Check that all classes are factors
+
+class(social_impact_data$Answer)
+class(backlash_data$Answer)
 class(backlash_data$Type)
+class(groups_engaging_data$Answer)
+class(groups_engaging_data$Type)
 
 ```
 
@@ -88,36 +215,57 @@ class(backlash_data$Type)
 
 # Visualize Data
 
-Now time to visualize the data. For some reason, font changes aren't working here.
+Now time to visualize the data. For some reason, font changes aren't working here. 
 
-```{r Social-Impact-Graph", warnings=FALSE}
+```{r Social-Impact-Graph, warnings=FALSE}
+# Social Media Impact Graph
 social_impact_graph <- social_impact_data %>%
   ggplot(aes(x = Answer, y = Proportion, fill=Answer)) + 
   geom_bar(stat="identity", show.legend = FALSE) + 
+  ggtitle('Do fan critics have an impact on political pressure, decisions, etc?') +
   ylab("% Respondents") + 
   scale_y_continuous(labels = scales::percent, limits=c(0,1))+
   geom_text(aes(label=scales::percent(Proportion), vjust=-0.3)) +
-  theme(axis.title.x = element_blank())
-
+  theme(axis.title.x = element_blank(),
+        plot.title = element_text(size=14))
 ```
 
-```{r}
+```{r SI, fig.width = 10}
 social_impact_graph
-
 ```
 
 
-```{r Backlash-Graph}
+```{r Backlash-Graph, fig.width = 10}
 
-backlash_data %>%
+backlash_graph <- backlash_data %>%
   ggplot(aes(x= Answer, Group=Type)) + 
   geom_bar(show.legend = FALSE, aes(y = Proportion, fill = factor(Type)), stat="identity") + 
   geom_text(aes( label = scales::percent(Proportion),y= Proportion ), stat= "identity", vjust = -.5, size = 3) +
+  ggtitle('How often do TV shows, music, movies, etc receive backlash from its fan community for:') +
   labs(y = "% Respondents", fill="Type") +
   facet_grid(~Type) +
   scale_y_continuous(labels = scales::percent,limits=c(0,1)) +
   theme(axis.title.x = element_blank(),
-        axis.text.x = element_text(angle = 45, hjust = 1))
+        axis.text.x = element_text(angle = 45, hjust = 1),
+        plot.title = element_text(size=14))
+
+backlash_graph
+```
+```{r Groups-Engaging-Graph, fig.width = 10}
+# Groups Engaging Graph
+groups_engaging_graph <-groups_engaging_data %>%
+  ggplot(aes(x= Answer, Group=Type)) + 
+  geom_bar(show.legend = FALSE, aes(y = Proportion, fill = factor(Type)), stat="identity") + 
+  geom_text(aes( label = scales::percent(Proportion),y= Proportion ), stat= "identity", vjust = -.5, size = 3) +
+  ggtitle('How often do you experience fans and fandoms engaging in such political activities?') +
+  labs(y = "% Respondents", fill="Type") +
+  facet_grid(~Type) +
+  scale_y_continuous(labels = scales::percent,limits=c(0,1)) +
+  theme(axis.title.x = element_blank(),
+        axis.text.x = element_text(angle = 45, hjust = 1),
+        plot.title = element_text(size=14))
+
+groups_engaging_graph
 
 ```
 
