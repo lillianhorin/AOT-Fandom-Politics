@@ -1,0 +1,73 @@
+---
+title: "Survey_Data_Visualization"
+author: "Lillian Horin (for Jarek Azim)"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Introduction
+
+This code will visualize the data from the survey conducted by Jarek Azim. One thing to note here is that the survey was conducted on QuestionPro, whose export function is not friendly for R analysis. This makes digging deeper in the analysis difficult (e.g. seeing whether results stratified by nationality). QuestionPro better exported just the final data, but since that is very easy to just manually type here, that is what I will be doing.
+
+# Data Import
+
+First, loading in the libraries for organization and data visualization.
+
+```{r Import-libraries, echo=T, message=FALSE, warning=FALSE}
+# Load libraries
+library(tidyverse)
+library(RColorBrewer)
+```
+
+These next codes will be loading in the survey data. 
+
+```{r Social-Impact}
+# Create dataset
+social_impact_data <- tibble(  
+	Answer = c("Yes", "No", "Probably", "I've Never Noticed"), 
+	Proportion = c(0.4932, 0.0685, 0.3699, 0.0685)
+)
+
+social_impact_data
+
+
+```
+
+# Data Preparation
+
+In order to visualize the graphs in a particular order, the data `levels` will be explicitly defined.
+
+```{r Factor-levels, echo=T, message=F}
+# Define order of answers that will be visualized
+social_impact_data$Answer <- social_impact_data$Answer %>%
+  factor(levels = c("Yes", "No", "Probably", "I've Never Noticed"))
+
+class(social_impact_data$Answer)
+```
+
+
+
+# Visualize Data
+
+Now time to visualize the data. For some reason, font changes aren't working here.
+
+```{r Social-Impact-Graph", warnings=FALSE}
+social_impact_data %>%
+  ggplot(aes(x = Answer, y = Proportion, fill=Answer)) + 
+  geom_bar(stat="identity", show.legend = FALSE) + 
+  ylab("% Respondents") + 
+  scale_y_continuous(labels = scales::percent, limits=c(0,1))+
+  geom_text(aes(label=Proportion*100), vjust=-0.3, size=4) +
+  theme(axis.title.x = element_blank(),
+        text=element_text(family="TT Times New Roman"))
+
+```
+
+---
+```{r Session-info}
+sessionInfo()
+```
+
