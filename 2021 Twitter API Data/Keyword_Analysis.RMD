@@ -1,7 +1,10 @@
 ---
 title: "2021 AOT Discussions in Twitter Spaces Analysis"
 author: Lillian Horin (for Jarek)
-output: html_document
+output: 
+  html_document:
+    self-contained: false
+    keep_md: true
 ---
 
 ```{r setup, include=FALSE}
@@ -17,7 +20,7 @@ Jarek received an excel file that scraped tweets from 2021. This file is origina
 
 The libraries that will be used are as follows.
 
-```{r}
+```{r Import-library}
 # Import library
 library(tidyverse)
 library(udpipe)
@@ -27,6 +30,66 @@ library(wordcloud)
 ---
 
 # Subsetting Data
+
+## Data import
+This dataset is huge - about 10 GB. So we will start by importing it and immediately trying to make it as easy to manage as possible.
+
+```{r Import-data}
+# Import data
+data10 <- read_csv('data/tweets.csv')
+head(data10)
+```
+
+
+## Data Preparation
+There is a ton of metadata, but for the analysis, we only care about the text of the tweets and the timestamp. We will immediately save this so that we don't have to reimport the huge file if anything breaks.
+
+```{r Subset-text-time}
+# Extract relevant columns: text and time posted
+small10 <- data10 %>%
+  select(text, created_at)
+head(small10)
+
+# Save full "relevant columns" as CSV
+write_csv(small10, "data/twitter10_text_time.csv")
+```
+
+And the code to reimport is here, if necessary.
+
+```{r Reimport-data}
+# Read smaller CSV
+small10 <- read_csv("data/twitter10_text_time.csv")
+```
+
+## Subset data with references to AOT
+
+We are going to pull out the tweets that, either through the use of hashtags or explicit text, refer to AOT. Many tweets in Japanese still use English in their tweets.
+
+```{r Subset-AOT}
+small10_key <- small10 %>%
+  filter(
+    grepl('進撃の巨人', text) | 
+      grepl('進撃', text) | 
+      grepl('巨人', text) |
+      grepl('SNK', text) |
+      grepl('Shingeki no Kyojin', text) |
+      grepl('Attack on Titan', text) |
+      grepl('Titan', text) |
+      grepl('AOT', text) |
+      grepl('AttackOnTitan', text) |
+      grepl('ShingekinoKyojin', text) |
+      grepl('Shingeki', text)
+      
+  )
+head(small10_key)
+```
+
+Save these tweets for later reimport.
+
+```{r Save-tweets}
+# Save keyword tweets to CSV
+write_csv(small10_key, "data/twitter10_text_time_keywords.csv")
+```
 
 Now, we will clean up the workspace to proceed to the Keyword Analysis.
 
@@ -61,7 +124,7 @@ This file took about 10 minutes to create, so we will be saving the output as a 
 
 ```{r}
 # Save NLP file
-saveRDS(annotated_data, file = "annotated_jpn_keyword_analysis.rds")
+saveRDS(annotated_data, file = "data/annotated_jpn_keyword_analysis.rds")
 
 # Reload NLP file
 annotated_data <- readRDS(file = "data/annotated_jpn_keyword_analysis.rds")
@@ -180,7 +243,7 @@ specific_kw <- data %>%
            str_detect(text, "歴史")) # History
 
 # Save tweets
-write_excel_csv(specific_kw, 'tweet10_keywords.csv') # Saving with this function preserves the Japanese encoding
+write_excel_csv(specific_kw, 'data/tweet10_keywords.csv') # Saving with this function preserves the Japanese encoding
 ```
 
 Now we are going to count the frequencies of those keywords in these tweets.
@@ -191,7 +254,6 @@ keywords <- list("ファン","軍隊","調査兵団","民族主義","虐殺","�
 
 # Get counts for those keywords
 keyword_count <- data.frame()
-colnames(keyword_count) <- c("Keyword", "Count")
   
 for (keyword in keywords) {
   key_count <- length(grep(keyword, specific_kw$text))
